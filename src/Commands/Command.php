@@ -7,6 +7,8 @@
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
+ *
+ * @author Klevialent Man <klevialent@gmail.com>
  */
 
 namespace Longman\TelegramBot\Commands;
@@ -26,8 +28,6 @@ use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
 
 /**
- * Class Command
- *
  * Base class for commands. It includes some helper methods that can fetch data directly from the Update object.
  *
  * @method Message             getMessage()            Optional. New incoming message of any kind — text, photo, sticker, etc.
@@ -43,104 +43,26 @@ use Longman\TelegramBot\Telegram;
  */
 abstract class Command
 {
-    /**
-     * Telegram object
-     *
-     * @var Telegram
-     */
-    protected $telegram;
+    protected Telegram $telegram;
+    protected Update $update;
+    protected string $name;
+    protected string $description;
+    protected string $usage;
+    protected bool $showInHelp;
+    protected string $version;
+    protected bool $enabled = true;
+    protected bool $need_mysql = false;     //If this command needs mysql
+    protected bool $private_only = false;   //Make sure this command only executes on a private chat.
+    protected array $config = [];
 
-    /**
-     * Update object
-     *
-     * @var Update
-     */
-    protected $update;
-
-    /**
-     * Name
-     *
-     * @var string
-     */
-    protected $name = '';
-
-    /**
-     * Description
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
-
-    /**
-     * Usage
-     *
-     * @var string
-     */
-    protected $usage = 'Command usage';
-
-    /**
-     * Show in Help
-     *
-     * @var bool
-     */
-    protected $show_in_help = true;
-
-    /**
-     * Version
-     *
-     * @var string
-     */
-    protected $version = '1.0.0';
-
-    /**
-     * If this command is enabled
-     *
-     * @var boolean
-     */
-    protected $enabled = true;
-
-    /**
-     * If this command needs mysql
-     *
-     * @var boolean
-     */
-    protected $need_mysql = false;
-
-    /*
-    * Make sure this command only executes on a private chat.
-    *
-    * @var bool
-    */
-    protected $private_only = false;
-
-    /**
-     * Command config
-     *
-     * @var array
-     */
-    protected $config = [];
-
-    /**
-     * Constructor
-     *
-     * @param Telegram $telegram
-     * @param Update   $update
-     */
-    public function __construct(Telegram $telegram, Update $update = null)
+    public function __construct(Telegram $telegram, ?Update $update = null)
     {
         $this->telegram = $telegram;
         $this->setUpdate($update);
         $this->config = $telegram->getCommandConfig($this->name);
     }
 
-    /**
-     * Set update object
-     *
-     * @param Update $update
-     *
-     * @return Command
-     */
-    public function setUpdate(Update $update = null)
+    public function setUpdate(Update $update = null): self
     {
         if ($update !== null) {
             $this->update = $update;
@@ -150,12 +72,9 @@ abstract class Command
     }
 
     /**
-     * Pre-execute command
-     *
-     * @return ServerResponse
      * @throws TelegramException
      */
-    public function preExecute()
+    public function preExecute(): ServerResponse
     {
         if ($this->need_mysql && !($this->telegram->isDbEnabled() && DB::isDbConnected())) {
             return $this->executeNoDb();
@@ -183,45 +102,30 @@ abstract class Command
     }
 
     /**
-     * Execute command
-     *
-     * @return ServerResponse
      * @throws TelegramException
      */
-    abstract public function execute();
+    abstract public function execute(): ServerResponse;
 
     /**
      * Execution if MySQL is required but not available
      *
-     * @return ServerResponse
      * @throws TelegramException
      */
-    public function executeNoDb()
+    public function executeNoDb(): ServerResponse
     {
         return $this->replyToChat('Sorry no database connection, unable to execute "' . $this->name . '" command.');
     }
 
-    /**
-     * Get update object
-     *
-     * @return Update
-     */
-    public function getUpdate()
+    public function getUpdate(): Update
     {
         return $this->update;
     }
 
     /**
      * Relay any non-existing function calls to Update object.
-     *
      * This is purely a helper method to make requests from within execute() method easier.
-     *
-     * @param string $name
-     * @param array  $arguments
-     *
-     * @return Command
      */
-    public function __call($name, array $arguments)
+    public function __call(string $name, array $arguments): Command
     {
         if ($this->update === null) {
             return null;
@@ -230,16 +134,12 @@ abstract class Command
     }
 
     /**
-     * Get command config
-     *
      * Look for config $name if found return it, if not return null.
      * If $name is not set return all set config.
      *
-     * @param string|null $name
-     *
      * @return array|mixed|null
      */
-    public function getConfig($name = null)
+    public function getConfig(?string $name = null)
     {
         if ($name === null) {
             return $this->config;
@@ -251,122 +151,68 @@ abstract class Command
         return null;
     }
 
-    /**
-     * Get telegram object
-     *
-     * @return Telegram
-     */
-    public function getTelegram()
+    public function getTelegram(): Telegram
     {
         return $this->telegram;
     }
 
-    /**
-     * Get usage
-     *
-     * @return string
-     */
-    public function getUsage()
+    public function getUsage(): string
     {
         return $this->usage;
     }
 
-    /**
-     * Get version
-     *
-     * @return string
-     */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->version;
     }
 
-    /**
-     * Get description
-     *
-     * @return string
-     */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    /**
-     * Get name
-     *
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * Get Show in Help
-     *
-     * @return bool
-     */
-    public function showInHelp()
+    public function showInHelp(): bool
     {
-        return $this->show_in_help;
+        return $this->showInHelp;
     }
 
-    /**
-     * Check if command is enabled
-     *
-     * @return bool
-     */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
 
     /**
      * If this command is intended for private chats only.
-     *
-     * @return bool
      */
-    public function isPrivateOnly()
+    public function isPrivateOnly(): bool
     {
         return $this->private_only;
     }
 
-    /**
-     * If this is a SystemCommand
-     *
-     * @return bool
-     */
-    public function isSystemCommand()
+    public function isSystemCommand(): bool
     {
         return ($this instanceof SystemCommand);
     }
 
-    /**
-     * If this is an AdminCommand
-     *
-     * @return bool
-     */
-    public function isAdminCommand()
+    public function isAdminCommand(): bool
     {
         return ($this instanceof AdminCommand);
     }
 
-    /**
-     * If this is a UserCommand
-     *
-     * @return bool
-     */
-    public function isUserCommand()
+    public function isUserCommand(): bool
     {
         return ($this instanceof UserCommand);
     }
 
     /**
      * Delete the current message if it has been called in a non-private chat.
-     *
-     * @return bool
      */
-    protected function removeNonPrivateMessage()
+    protected function removeNonPrivateMessage(): bool
     {
         $message = $this->getMessage() ?: $this->getEditedMessage();
 
@@ -390,13 +236,9 @@ abstract class Command
     /**
      * Helper to reply to a chat directly.
      *
-     * @param string $text
-     * @param array  $data
-     *
-     * @return ServerResponse
      * @throws TelegramException
      */
-    public function replyToChat($text, array $data = [])
+    public function replyToChat(string $text, array $data = []): ServerResponse
     {
         if ($message = $this->getMessage() ?: $this->getEditedMessage() ?: $this->getChannelPost() ?: $this->getEditedChannelPost()) {
             return Request::sendMessage(array_merge([
@@ -411,13 +253,9 @@ abstract class Command
     /**
      * Helper to reply to a user directly.
      *
-     * @param string $text
-     * @param array  $data
-     *
-     * @return ServerResponse
      * @throws TelegramException
      */
-    public function replyToUser($text, array $data = [])
+    public function replyToUser(string $text, array $data = []): ServerResponse
     {
         if ($message = $this->getMessage() ?: $this->getEditedMessage()) {
             return Request::sendMessage(array_merge([
