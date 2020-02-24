@@ -7,6 +7,8 @@
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
+ *
+ * @author Klevialent Man <klevialent@gmail.com>
  */
 
 namespace Longman\TelegramBot\Commands\UserCommands;
@@ -20,10 +22,7 @@ use Longman\TelegramBot\Exception\TelegramException;
  */
 class StartCommand extends UserCommand
 {
-    /**
-     * @var string
-     */
-    protected $name = 'start';
+    protected string $name = 'start';
 
     /**
      * @var string
