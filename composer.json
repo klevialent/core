@@ -11,19 +11,25 @@
     },
     "authors": [
         {
-            "name": "Klevialent Man",
-            "email": "klevialent@gmail.com",
-            "homepage": "https://github.com/klevialent/",
+            "name": "Avtandil Kikabidze aka LONGMAN",
+            "email": "akalongman@gmail.com",
+            "homepage": "http://longman.me",
             "role": "Developer"
         },
         {
             "name": "PHP Telegram Bot Team",
             "homepage": "https://github.com/klevialent/core/graphs/contributors",
             "role": "Developer"
+        },
+        {
+            "name": "Klevialent Man",
+            "email": "klevialent@gmail.com",
+            "homepage": "https://github.com/klevialent/",
+            "role": "Developer"
         }
     ],
     "require": {
-        "php": "^7.4.*",
+        "php": "^7.4",
         "ext-pdo": "*",
         "ext-curl": "*",
         "ext-json": "*",
